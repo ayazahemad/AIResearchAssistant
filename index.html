@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Research Assistant</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f9fafb; color: #333; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #2563eb; }
+        label { font-weight: bold; display: block; margin-top: 15px; }
+        input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { margin-top: 20px; padding: 10px 20px; background-color: #2563eb; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; }
+        button:hover { background-color: #1d4ed8; }
+        #loading { display: none; text-align: center; margin-top: 20px; font-weight: bold; color: #2563eb; }
+        .section { margin-top: 30px; }
+        .card { background: #f3f4f6; padding: 15px; margin-top: 10px; border-radius: 8px; border-left: 4px solid #2563eb; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>AI Research Assistant</h1>
+    <form id="researchForm">
+        <label for="topic">Topic:</label>
+        <input type="text" id="topic" required placeholder="e.g., Quantum Computing">
+
+        <label for="research_questions">Key Research Questions:</label>
+        <textarea id="research_questions" rows="3" required placeholder="e.g., What are the latest advancements?"></textarea>
+
+        <label for="timeframe">Timeframe:</label>
+        <input type="text" id="timeframe" required placeholder="e.g., 2020-2026">
+
+        <button type="submit">Generate Report</button>
+    </form>
+
+    <div id="loading">Generating report... this may take a moment.</div>
+    <div id="results"></div>
+</div>
+
+<script>
+    document.getElementById('researchForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const data = {
+            topic: document.getElementById('topic').value,
+            research_questions: document.getElementById('research_questions').value,
+            timeframe: document.getElementById('timeframe').value
+        };
+
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('results').innerHTML = '';
+
+        try {
+            const response = await fetch('/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            const report = await response.json();
+            renderReport(report);
+        } catch (error) {
+            document.getElementById('results').innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    });
+
+    function renderReport(report) {
+        let html = `<div class="section"><h2>Report: ${report.topic}</h2>`;
+        
+        html += `<h3>📄 Key Papers</h3>`;
+        report.papers.forEach(p => {
+            html += `<div class="card">
+                <strong>${p.title}</strong> (${p.year})<br>
+                <em>${p.authors.join(', ')} - ${p.journal}</em>
+                <p>${p.abstract}</p>
+            </div>`;
+        });
+
+        html += `<h3>🧮 Important Formulas</h3>`;
+        report.formulas.forEach(f => {
+            html += `<div class="card">
+                <strong>${f.name}</strong>
+                <p>\\( ${f.latex} \\)</p>
+                <p><small>${f.description}</small></p>
+            </div>`;
+        });
+
+        html += `<h3>📈 Emerging Trends</h3>`;
+        report.trends.forEach(t => {
+            html += `<div class="card">
+                <strong>${t.topic}</strong>
+                <p>${t.description}</p>
+                <ul>${t.examples.map(ex => `<li>${ex}</li>`).join('')}</ul>
+            </div>`;
+        });
+
+        html += `</div>`;
+        document.getElementById('results').innerHTML = html;
+        
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+</script>
+
+</body>
+</html>

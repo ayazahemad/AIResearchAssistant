@@ -1,2 +1,4 @@
 .env
 aienv/
+__pycache__/
+*.pyc

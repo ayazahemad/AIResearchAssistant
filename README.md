@@ -24,5 +24,5 @@ GOOGLE_API_KEY=your_api_key
 Run:
 
 ```bash
-python main.py
+uvircorn main:app --reload
 ```
